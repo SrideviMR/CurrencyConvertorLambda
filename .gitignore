@@ -1,0 +1,16 @@
+# Environment files
+.env
+.env.local
+
+# AWS / Azure secrets
+*.pem
+*.key
+*.crt
+*.pfx
+azure-credentials.json
+
+# Node modules (optional, usually ignored)
+node_modules/
+
+# Logs
+*.log

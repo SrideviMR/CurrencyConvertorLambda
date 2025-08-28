@@ -13,6 +13,7 @@ export const createCurrencyItem = async (currency: Currency) => {
   };
 
   try {
+    console.log('Creating currency item with params:', params);
     await putItem(params);
     return { success: true, data: currency };
   } catch (error: any) {
