@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Currency Converter Application using AWS SAM (Lambda-only updates)
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 128
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        TABLE_NAME: currency-convertor-dev   # reference existing table
+
+Resources:
+
+  ## API Gateway
+  CurrencyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Cors:
+        AllowMethods: "'GET,POST,PUT'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+        AllowOrigin: "'*'"
+
+  ## Lambda Functions
+  CreateCurrencyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: createCurrency
+      Handler: lambdas/currencyConvertor.createCurrencyHandler
+      Runtime: nodejs18.x
+      CodeUri: src
+      Events:
+        CreateApi:
+          Type: Api
+          Properties:
+            Path: /currencies
+            Method: post
+            RestApiId: !Ref CurrencyApi
+    Metadata:
+      BuildMethod: esbuild
+
+  GetAllCurrenciesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getAllCurrencies
+      Handler: lambdas/currencyConvertor.getAllCurrenciesHandler
+      Runtime: nodejs18.x
+      CodeUri: src
+      Events:
+        GetAllApi:
+          Type: Api
+          Properties:
+            Path: /currencies
+            Method: get
+            RestApiId: !Ref CurrencyApi
+    Metadata:
+      BuildMethod: esbuild
+
+  CalculateCurrencyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: calculateCurrency
+      Handler: lambdas/currencyConvertor.calculateCurrencyHandler
+      Runtime: nodejs18.x
+      CodeUri: src
+      Events:
+        CalculateApi:
+          Type: Api
+          Properties:
+            Path: /currencies/calculate
+            Method: get
+            RestApiId: !Ref CurrencyApi
+    Metadata:
+      BuildMethod: esbuild
+
+  UpdateCurrencyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: updateCurrency
+      Handler: lambdas/currencyConvertor.updateCurrencyHandler
+      Runtime: nodejs18.x
+      CodeUri: src
+      Events:
+        UpdateApi:
+          Type: Api
+          Properties:
+            Path: /currencies/{code}
+            Method: put
+            RestApiId: !Ref CurrencyApi
+    Metadata:
+      BuildMethod: esbuild
+
+  GetCurrencyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getCurrency
+      Handler: lambdas/currencyConvertor.getCurrencyHandler
+      Runtime: nodejs18.x
+      CodeUri: src
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /currencies/{code}
+            Method: get
+            RestApiId: !Ref CurrencyApi
+    Metadata:
+      BuildMethod: esbuild
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${CurrencyApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
